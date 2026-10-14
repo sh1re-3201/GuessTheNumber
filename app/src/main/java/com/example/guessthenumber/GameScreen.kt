@@ -71,6 +71,11 @@ fun GameScreen(modifier: Modifier = Modifier) {
                 gameState = gameState.copy(errorMessage = "Number must be between 0 and 100")
             }
             else -> {
+                val isCorrect = (guess == gameState.targetNumber)
+                val nextScore = calculateNextScore(gameState.score, isCorrect)
+                val isGameOver = isCorrect || nextScore == 0
+                val isGameWon = isCorrect
+
                 val diff = kotlin.math.abs(guess - gameState.targetNumber)
                 val tier = evaluateGuess(guess, gameState.targetNumber)
                 val direction = evaluateDirection(guess, gameState.targetNumber)
@@ -85,7 +90,9 @@ fun GameScreen(modifier: Modifier = Modifier) {
                     attempts = listOf(newAttempt) + gameState.attempts,
                     currentTier = tier,
                     lastGuess = guess,
-                    isGameOver = (guess == gameState.targetNumber),
+                    score = nextScore,
+                    isGameOver = isGameOver,
+                    isGameWon = isGameWon,
                     currentInput = "",
                     errorMessage = null
                 )
@@ -140,18 +147,38 @@ fun GameScreen(modifier: Modifier = Modifier) {
                     )
                 }
 
-                Button(
-                    onClick = resetGame,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White.copy(alpha = 0.2f),
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(12.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = "↺ Reset",
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
-                    )
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFFFFD700).copy(alpha = 0.25f),
+                        border = BorderStroke(1.dp, Color(0xFFFFD700).copy(alpha = 0.7f))
+                    ) {
+                        Text(
+                            text = "⭐ ${gameState.score}",
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color(0xFFFFD700)
+                            )
+                        )
+                    }
+
+                    Button(
+                        onClick = resetGame,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White.copy(alpha = 0.2f),
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = "↺ Reset",
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
                 }
             }
 
@@ -174,17 +201,35 @@ fun GameScreen(modifier: Modifier = Modifier) {
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     // Status Badge / Feedback
+                    val statusTitle = when {
+                        gameState.isGameWon -> "Jackpot! You Won!"
+                        gameState.isGameOver && !gameState.isGameWon -> "Game Over!"
+                        else -> gameState.currentTier.title
+                    }
+
+                    val statusDescription = when {
+                        gameState.isGameWon -> "Final Score: ${gameState.score} / 100! Enjoy the fireworks!"
+                        gameState.isGameOver && !gameState.isGameWon -> "You ran out of points (-10 per wrong guess). The secret number was ${gameState.targetNumber}."
+                        else -> gameState.currentTier.description
+                    }
+
+                    val titleColor = when {
+                        gameState.isGameWon -> Color(0xFFFFD700)
+                        gameState.isGameOver && !gameState.isGameWon -> Color(0xFFFF1744)
+                        else -> getTierAccentColor(gameState.currentTier)
+                    }
+
                     Text(
-                        text = gameState.currentTier.title,
+                        text = statusTitle,
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.ExtraBold,
-                            color = getTierAccentColor(gameState.currentTier)
+                            color = titleColor
                         ),
                         textAlign = TextAlign.Center
                     )
 
                     Text(
-                        text = gameState.currentTier.description,
+                        text = statusDescription,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color.White.copy(alpha = 0.9f)
                         ),
@@ -212,7 +257,7 @@ fun GameScreen(modifier: Modifier = Modifier) {
                         }
                     }
 
-                    // Input Field (disabled when game is won)
+                    // Input Field (disabled when game is won or out of points)
                     OutlinedTextField(
                         value = gameState.currentInput,
                         onValueChange = { newValue ->
@@ -266,8 +311,8 @@ fun GameScreen(modifier: Modifier = Modifier) {
                         Button(
                             onClick = resetGame,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFFFD700),
-                                contentColor = Color.Black
+                                containerColor = if (gameState.isGameWon) Color(0xFFFFD700) else Color(0xFFFF5252),
+                                contentColor = if (gameState.isGameWon) Color.Black else Color.White
                             ),
                             shape = RoundedCornerShape(14.dp),
                             modifier = Modifier
@@ -275,7 +320,7 @@ fun GameScreen(modifier: Modifier = Modifier) {
                                 .height(50.dp)
                         ) {
                             Text(
-                                text = "🎉 Play Again!",
+                                text = if (gameState.isGameWon) "🎉 Play Again!" else "↺ Try Again (Reset to 100)",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                             )
                         }

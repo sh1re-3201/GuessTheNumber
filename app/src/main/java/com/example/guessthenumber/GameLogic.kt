@@ -61,9 +61,19 @@ data class GameState(
     val attempts: List<GuessAttempt> = emptyList(),
     val currentTier: FeedbackTier = FeedbackTier.INITIAL,
     val lastGuess: Int? = null,
+    val score: Int = 100,
     val isGameOver: Boolean = false,
+    val isGameWon: Boolean = false,
     val errorMessage: String? = null
 )
+
+/**
+ * Calculates updated score.
+ * Starts at 100, decreases by 10 per incorrect guess, and is capped at 0.
+ */
+fun calculateNextScore(currentScore: Int, isCorrect: Boolean): Int {
+    return if (isCorrect) currentScore else (currentScore - 10).coerceAtLeast(0)
+}
 
 /**
  * Generates an integer between 0 and 100 inclusive.
