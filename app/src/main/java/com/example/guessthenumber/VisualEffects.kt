@@ -369,13 +369,13 @@ fun FurthestAwayEffect(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxSize()
             .background(Color.Black),
-        contentAlignment = Alignment.TopCenter
+        contentAlignment = Alignment.BottomCenter
     ) {
         Text(
             text = "YOU'VE CHOSEN THE FURTHEST AWAY ANSWER POSSIBLE!",
             modifier = Modifier
                 .padding(horizontal = 24.dp)
-                .padding(top = 80.dp),
+                .padding(bottom = 120.dp),
             style = TextStyle(
                 color = Color(0xFFFF1744).copy(alpha = alphaAnim.value),
                 fontSize = 20.sp,
