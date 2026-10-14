@@ -407,7 +407,7 @@ fun GameScreen(modifier: Modifier = Modifier) {
                                             )
                                         )
                                         Text(
-                                            text = if (attempt.diff == 0) "Match" else "off by ${attempt.diff}",
+                                            text = if (attempt.diff == 0) "Match" else "",
                                             style = MaterialTheme.typography.labelSmall.copy(
                                                 color = Color.White.copy(alpha = 0.8f)
                                             )
