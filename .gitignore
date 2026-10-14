@@ -13,3 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Android Test directories
+/app/src/test/
+/app/src/androidTest/
